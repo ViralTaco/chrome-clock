@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minutes Clock Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@700&family=IBM+Plex+Mono:wght@700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #7c3aed;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      width: 340px;
+      padding: 16px;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .preview-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .preview-box canvas {
+      image-rendering: pixelated;
+      border-radius: 4px;
+      background-image: linear-gradient(45deg, #222 25%, transparent 25%), linear-gradient(-45deg, #222 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #222 75%), linear-gradient(-45deg, transparent 75%, #222 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    }
+    .preview-box span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin: 14px 0 8px 0;
+      font-weight: 700;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    select, input[type="text"] {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+    }
+    input[type="color"] {
+      -webkit-appearance: none;
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      cursor: pointer;
+      background: none;
+      padding: 0;
+    }
+    input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+    input[type="color"]::-webkit-color-swatch { border: none; border-radius: 5px; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .checkbox-label input {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+    }
+    .saved-toast {
+      font-size: 11px;
+      color: #10b981;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .saved-toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <h2>
+    <span>Minutes Settings</span>
+    <span id="toast" class="saved-toast">Saved</span>
+  </h2>
+
+  <div class="preview-box">
+    <canvas id="preview" width="48" height="48"></canvas>
+    <span>Live Icon Preview</span>
+  </div>
+
+  <div class="section-title">Time & Font</div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" id="padZero" checked>
+      <span>Show leading zero (05 vs 5)</span>
+    </label>
+  </div>
+
+  <div class="form-group">
+    <label for="fontFamily">Font Family</label>
+    <select id="fontFamily">
+      <option value="IBM Plex Mono">IBM Plex Mono</option>
+      <option value="Hack">Hack</option>
+      <option value="Fira Code">Fira Code</option>
+      <option value="JetBrains Mono">JetBrains Mono</option>
+      <option value="Courier New">Courier New</option>
+      <option value="monospace">Monospace</option>
+      <option value="system-ui">System UI</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="fontSizeScale">Text Size / Overflow (<span id="sizeVal">1.0</span>x)</label>
+    <input type="range" id="fontSizeScale" min="0.5" max="1.6" step="0.05" value="1.0">
+  </div>
+
+  <div class="section-title">Background & Colors</div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" id="transparentBg">
+      <span>No background (Transparent)</span>
+    </label>
+  </div>
+
+  <div class="form-group" id="bgColorGroup">
+    <label for="bgColorPicker">Background Color</label>
+    <div class="row">
+      <input type="color" id="bgColorPicker" value="#7c3aed">
+      <input type="text" id="bgColorText" value="#7c3aed">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="textColorPicker">Text Color</label>
+    <div class="row">
+      <input type="color" id="textColorPicker" value="#ffffff">
+      <input type="text" id="textColorText" value="#ffffff">
+    </div>
+  </div>
+
+  <div class="section-title">Borders & Progress</div>
+
+  <div class="form-group">
+    <label for="borderStyle">Border Style</label>
+    <select id="borderStyle">
+      <option value="none">None</option>
+      <option value="solid">Solid</option>
+      <option value="dashed">Dashed</option>
+      <option value="dotted">Dotted</option>
+      <option value="double">Double</option>
+      <option value="groove">Groove</option>
+      <option value="ridge">Ridge</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="borderColorPicker">Border Color</label>
+    <div class="row">
+      <input type="color" id="borderColorPicker" value="#ffffff">
+      <input type="text" id="borderColorText" value="#ffffff">
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="borderRadius">Corner Radius (<span id="radiusVal">4</span>px)</label>
+    <input type="range" id="borderRadius" min="0" max="8" value="4">
+  </div>
+
+  <div class="form-group">
+    <label class="checkbox-label">
+      <input type="checkbox" id="showProgressBorder" checked>
+      <span>Analog Progress Ring (Path from 12 o'clock)</span>
+    </label>
+  </div>
+
+  <div class="form-group">
+    <label for="progressColorPicker">Progress Ring Color</label>
+    <div class="row">
+      <input type="color" id="progressColorPicker" value="#a855f7">
+      <input type="text" id="progressColorText" value="#a855f7">
+  </div>
+
+  <footer style="margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); text-align: center; font-size: 11px; color: var(--muted);">
+    <p>Copyright © 2026 <a href="https://anth.pro" target="_blank" rel="noopener" style="color: var(--muted); text-decoration: underline;">viraltaco_</a>. All rights reserved.</p>
+    <p style="margin-top: 4px;"><a href="https://viraltaco.com/chrome-clock" target="_blank" rel="noopener" style="color: var(--accent); text-decoration: none; font-weight: 500;">GitHub Repository</a></p>
+  </footer>
+
+  <script src="options.js"></script>
+</body>
+</html>
