@@ -213,16 +213,29 @@ function scheduleNextTick() {
   }, msUntilNextMinute);
 }
 
+function ensureAlarm() {
+  chrome.alarms.get('clockTick', (alarm) => {
+    if (!alarm) {
+      chrome.alarms.create('clockTick', { periodInMinutes: 1 });
+    }
+  });
+}
+
 // Lifecycle listeners
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.alarms.create('clockTick', { periodInMinutes: 1 });
+  ensureAlarm();
   updateIcon();
 });
 
-chrome.runtime.onStartup.addListener(updateIcon);
+chrome.runtime.onStartup.addListener(() => {
+  ensureAlarm();
+  updateIcon();
+});
 chrome.alarms.onAlarm.addListener(updateIcon);
 chrome.storage.onChanged.addListener(updateIcon);
 
 // Initial execution
+ensureAlarm();
 updateIcon();
 scheduleNextTick();
+
